@@ -116,7 +116,7 @@ private:
         metadata.set("NumSampleLoops", "1");
 
         std::unique_ptr<juce::FileOutputStream> fileStream (outputFile.createOutputStream());
-        std::unique_ptr<juce::AudioFormatWriter> writer (wavFormat.createWriterFor (fileStream.release(), sampleRate, numChannels, 16, metadata, 0));
+        std::unique_ptr<juce::AudioFormatWriter> writer (wavFormat.createWriterFor (fileStream.release(), sampleRate, numChannels, reader->bitsPerSample, metadata, 0));
         if (writer == nullptr)
         {
             juce::Logger::writeToLog ("Failed to create output file.");
