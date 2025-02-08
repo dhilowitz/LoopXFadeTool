@@ -79,45 +79,40 @@ private:
 
         for (int channel = 0; channel < numChannels; ++channel)
         {
+            int index = 0;
+            int chunk1Length = loopStart;
             // Copy the beginning of the file up to loopStart
-            outputBuffer.copyFrom (channel, 0, buffer, channel, 0, loopStart);
+            outputBuffer.copyFrom (channel, index, buffer, channel, 0, chunk1Length);
+            index += chunk1Length;
 
             // Copy the portion of the loop before the crossfade starts
-            outputBuffer.copyFrom (channel, loopStart, buffer, channel, loopStart, loopEnd - loopStart - crossfadeAmount);
+            int chunk2Length = loopEnd - loopStart - crossfadeAmount;
+            outputBuffer.copyFrom (channel, index, buffer, channel, loopStart, chunk2Length);
+            index += chunk2Length;
 
             // Perform the crossfade
             for (int i = 0; i < crossfadeAmount; ++i)
             {
                 float fadeOut = std::cos ((float)i / crossfadeAmount * juce::MathConstants<float>::halfPi);
                 float fadeIn = std::sin ((float)i / crossfadeAmount * juce::MathConstants<float>::halfPi);
-                outputBuffer.setSample (channel, loopStart + (loopEnd - loopStart - crossfadeAmount) + i,
-                                        buffer.getSample (channel, loopEnd - crossfadeAmount + i) * fadeOut + buffer.getSample (channel, loopStart + i) * fadeIn);
+                outputBuffer.setSample (channel, index + i,
+                                        buffer.getSample (channel, index + i) * fadeOut +
+                                        buffer.getSample (channel, (loopStart - crossfadeAmount) + i) * fadeIn);
             }
         }
 
-        juce::File outputFile = inputFile.getSiblingFile ("output.wav");
+        juce::File outputFile = inputFile.getSiblingFile (inputFile.getFileNameWithoutExtension() + "_XFade.wav");
+        if(outputFile.existsAsFile()) {
+            outputFile.deleteFile();
+        }
         juce::WavAudioFormat wavFormat;
         juce::StringPairArray metadata;
 
         // Set Loop0Start and Loop0End in metadata
-        metadata.set("Loop0PlayCount", juce::String(0));
-        metadata.set("Loop0Fraction", juce::String(0));
         metadata.set("Loop0Start", juce::String(loopStart));
         metadata.set("Loop0End", juce::String(loopEnd));
         metadata.set("Loop0Identifier",juce::String(0));
         metadata.set("Loop0Type", juce::String(0));
-        metadata.set("SamplerData", juce::String(0));
-        metadata.set("SmpteOffset", juce::String(0));
-        metadata.set("SmpteFormat", juce::String(0));
-//        metadata.set("MidiPitchFraction", juce::String(0));
-        // metadata.set("ICRD", 2025-02-07);
-        // metadata.set("SamplePeriod", 20833);
-        metadata.set("MetaDataSource", "WAV");
-        metadata.set("Product", juce::String(0));
-        metadata.set("NumCuePoints", juce::String(0));
-//        metadata.set("MidiUnityNote", juce::String(60);
-        metadata.set("Manufacturer", juce::String(0));
-        // metadata.set("ISFT", LoopAuditioneer (libsndfile-1.2.2));
         metadata.set("NumSampleLoops", "1");
 
         std::unique_ptr<juce::FileOutputStream> fileStream (outputFile.createOutputStream());
