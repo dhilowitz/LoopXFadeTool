@@ -1,2 +1,5 @@
 Builds/MacOSX/build
 Builds/MacOSX/LoopXFadeTool.xcodeproj/project.xcworkspace/xcuserdata
+*.user
+Builds/VisualStudio2022/.vs
+Builds/VisualStudio2022/x64

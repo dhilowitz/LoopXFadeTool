@@ -52,22 +52,33 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "&quot;/Users/dhilowitz/Dropbox/Music (in-progress)/Sample Projects/168 Arturia Augmented Strings Work/src/All Formats/DHilowitz Augmented Strings Work/Additional/Harsh 1 - Degraded String Machine/Solar42Chain4_045.wav&quot;"
+            argument = "../../../../Test/Test.aif"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "114473"
+            argument = "../../../../Test/Test_XFade.wav"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "383999"
+            argument = "93576"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "10000"
+            argument = "184497"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "90921"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = ""
+            value = ""
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
