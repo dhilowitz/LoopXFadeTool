@@ -23,9 +23,9 @@ public:
         juce::File inputFile(args[0]);
         int loopStart = args[1].getIntValue();
         int loopEnd = args[2].getIntValue();
-        int crossfadeAmount = args[3].getIntValue();
+        int loopCrossfade = args[3].getIntValue();
 
-        processFile(inputFile, loopStart, loopEnd, crossfadeAmount);
+        processFile(inputFile, loopStart, loopEnd, loopCrossfade);
         quit();
     }
 
@@ -54,7 +54,7 @@ private:
         juce::Logger::writeToLog("Usage: LoopXFadeTool <input_wav_file> <loop_start> <loop_end> <crossfade_amount>");
     }
 
-    void processFile (const juce::File& inputFile, int loopStart, int loopEnd, int crossfadeAmount)
+    void processFile (const juce::File& inputFile, int loopStart, int loopEnd, int loopCrossfade)
     {
         juce::AudioFormatManager formatManager;
         formatManager.registerBasicFormats();
@@ -68,13 +68,14 @@ private:
 
         int numChannels = reader->numChannels;
         int sampleRate = reader->sampleRate;
+        int bitsPerSample = reader->bitsPerSample;
 
         // Create buffer to read the original file
-        juce::AudioBuffer<float> buffer (numChannels, loopEnd + crossfadeAmount);
-        reader->read (&buffer, 0, loopEnd + crossfadeAmount, 0, true, true);
+        juce::AudioBuffer<float> buffer (numChannels, loopEnd + loopCrossfade);
+        reader->read (&buffer, 0, loopEnd + loopCrossfade, 0, true, true);
 
         // Create output buffer with the correct size
-        int outputLength = loopStart + (loopEnd - loopStart - crossfadeAmount) + crossfadeAmount;
+        int outputLength = loopStart + (loopEnd - loopStart - loopCrossfade) + loopCrossfade;
         juce::AudioBuffer<float> outputBuffer (numChannels, outputLength);
 
         for (int channel = 0; channel < numChannels; ++channel)
@@ -84,21 +85,25 @@ private:
             // Copy the beginning of the file up to loopStart
             outputBuffer.copyFrom (channel, index, buffer, channel, 0, chunk1Length);
             index += chunk1Length;
-
+            
             // Copy the portion of the loop before the crossfade starts
-            int chunk2Length = loopEnd - loopStart - crossfadeAmount;
+            int chunk2Length = loopEnd - loopStart - loopCrossfade;
             outputBuffer.copyFrom (channel, index, buffer, channel, loopStart, chunk2Length);
             index += chunk2Length;
-
-            // Perform the crossfade
-            for (int i = 0; i < crossfadeAmount; ++i)
-            {
-                float fadeOut = std::cos ((float)i / crossfadeAmount * juce::MathConstants<float>::halfPi);
-                float fadeIn = std::sin ((float)i / crossfadeAmount * juce::MathConstants<float>::halfPi);
-                outputBuffer.setSample (channel, index + i,
-                                        buffer.getSample (channel, index + i) * fadeOut +
-                                        buffer.getSample (channel, (loopStart - crossfadeAmount) + i) * fadeIn);
-            }
+            
+           // Perform the crossfade
+           for (int i = 0; i <= loopCrossfade; ++i)
+           {
+               float fadeOut = std::cos ((float)i / loopCrossfade * juce::MathConstants<float>::halfPi);
+               float fadeIn = std::sin ((float)i / loopCrossfade * juce::MathConstants<float>::halfPi);
+               
+               float sampleToFadeOut = buffer.getSample (channel, (loopEnd - loopCrossfade) + i);
+               float sampleToFadeIn = buffer.getSample (channel, (loopStart - loopCrossfade) + i);
+               
+               outputBuffer.setSample (channel, index + i,
+                                       sampleToFadeOut * fadeOut +
+                                       sampleToFadeIn * fadeIn);
+           }
         }
 
         juce::File outputFile = inputFile.getSiblingFile (inputFile.getFileNameWithoutExtension() + "_XFade.wav");
