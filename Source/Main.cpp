@@ -110,12 +110,12 @@ private:
             index += chunk1Length;
             
             // Copy the portion of the loop before the crossfade starts
-            int chunk2Length = loopEnd - loopStart - loopCrossfade;
+            int chunk2Length = loopEnd - loopStart - loopCrossfade + 1;
             outputBuffer.copyFrom (channel, index, buffer, channel, loopStart, chunk2Length);
             index += chunk2Length;
             
            // Perform the crossfade
-           for (int i = 0; i <= loopCrossfade; ++i)
+           for (int i = 0; i < loopCrossfade; ++i)
            {
                float fadeOut = std::cos ((float)i / loopCrossfade * juce::MathConstants<float>::halfPi);
                float fadeIn = std::sin ((float)i / loopCrossfade * juce::MathConstants<float>::halfPi);
